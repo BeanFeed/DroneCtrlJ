@@ -55,11 +55,7 @@ namespace DroneJoystickCtrl
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
                 foreach (var state in datas)
-                {
-                    if (Convert.ToString(state.Offset) == "X" || Convert.ToString(state.Offset) == "Y") {
-                        Console.WriteLine(Convert.ToString(state.Offset) + ": " + Convert.ToString(state.Value));
-                    }
-                }
+                    Console.WriteLine(state);
             }
         }
 
