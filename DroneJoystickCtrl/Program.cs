@@ -5,13 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.DirectInput;
-using TelloCommander;
+using WebSocketSharp;
+
 namespace DroneJoystickCtrl
 {
     class Program
     {
+        
         static void Main(string[] args)
         {
+            var ws = new WebSocket("localhost:8000");
+            int x = 0;
+            int y = 0;
+
             var directInput = new DirectInput();
 
             var joystickGuid = Guid.Empty;
@@ -49,17 +55,34 @@ namespace DroneJoystickCtrl
 
             // Acquire the joystick
             joystick.Acquire();
-
-            // Poll events from joystick
+            
             while (true)
             {
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
+                
+                
                 foreach (var state in datas)
-                    Console.WriteLine(state);
+                {
+                    
+                    if (Convert.ToString(state.Offset) == "X")
+                    {
+                        x = Convert.ToInt32((state.Value - 32511) / 325.11);
+                        if (x > 100) x = 100; 
+                    } else if (Convert.ToString(state.Offset) == "Y")
+                    {
+                        y = Convert.ToInt32((state.Value - 32511) / 325.11);
+                        if (y > 100) y = 100;
+                    }
+                    
+                }
+                Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
             }
+            
+            
+  
         }
-
+       
     }
 }
 
