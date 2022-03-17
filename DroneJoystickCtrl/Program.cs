@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.DirectInput;
+using TelloCommander;
 namespace DroneJoystickCtrl
 {
     class Program
