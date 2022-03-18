@@ -16,16 +16,18 @@ namespace DroneJoystickCtrl
         static void Main(string[] args)
         {
             WebSocket ws = new WebSocket("ws://localhost:8000");
-            
-
-            Console.ReadKey();
+            ws.Connect();
+            Console.WriteLine(ws.IsAlive);
+            ws.Send("test");
+            Console.WriteLine("test1");
+            //Console.ReadKey();
             int x = 0;
             int y = 0;
 
             var directInput = new DirectInput();
 
             var joystickGuid = Guid.Empty;
-
+            Console.WriteLine("test2");
             foreach (var deviceInstance in directInput.GetDevices(DeviceType.Gamepad,
                 DeviceEnumerationFlags.AllDevices))
                 joystickGuid = deviceInstance.InstanceGuid;
@@ -35,7 +37,7 @@ namespace DroneJoystickCtrl
                 foreach (var deviceInstance in directInput.GetDevices(DeviceType.Joystick,
                         DeviceEnumerationFlags.AllDevices))
                     joystickGuid = deviceInstance.InstanceGuid;
-
+            Console.WriteLine("test3");
             // If Joystick not found, throws an error
             if (joystickGuid == Guid.Empty)
             {
@@ -43,10 +45,10 @@ namespace DroneJoystickCtrl
                 Console.ReadKey();
                 Environment.Exit(1);
             }
-
+            Console.WriteLine("test4");
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
-
+            Console.WriteLine("line 50");
             Console.WriteLine("Found Joystick/Gamepad with GUID: {0}", joystickGuid);
 
             // Query all suported ForceFeedback effects
@@ -58,10 +60,13 @@ namespace DroneJoystickCtrl
             joystick.Properties.BufferSize = 128;
 
             // Acquire the joystick
-            joystick.Acquire();
-            
+            //joystick.Acquire();
+            Console.WriteLine("test");
             while (true)
             {
+                Console.WriteLine("test");
+                Console.WriteLine(ws.IsAlive);
+                ws.Send("test");
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
                 
@@ -85,6 +90,7 @@ namespace DroneJoystickCtrl
                     
                 }
                 //Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
+                
             }
             
             

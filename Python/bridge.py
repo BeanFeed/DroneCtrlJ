@@ -1,26 +1,22 @@
-import websockets
 import asyncio
+
+import websockets
+
 from djitellopy import Tello
-message = ""
 
 #drone = Tello()
 #drone.connect()
 
-async def handler(websocket, path):
-    global message
-    data = await websocket.recv()
-    message = data
-    print(message)
-    #reply = f"Data recieved as:  {data}!"
-    #drone.send_control_command(message)
-    #await websocket.send(reply)
+async def handler(websocket):
+    while True:
+        message = await websocket.recv()
+        print(message)
 
- 
 
-start_server = websockets.serve(handler, "localhost", 8000)
+async def main():
+    async with websockets.serve(handler, "", 8000):
+        await asyncio.Future()  # run forever
 
- 
 
-asyncio.get_event_loop().run_until_complete(start_server)
-
-asyncio.get_event_loop().run_forever()
+if __name__ == "__main__":
+    asyncio.run(main())
