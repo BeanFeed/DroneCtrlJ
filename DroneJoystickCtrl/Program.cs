@@ -12,9 +12,13 @@ namespace DroneJoystickCtrl
     class Program
     {
         
+
         static void Main(string[] args)
         {
-            var ws = new WebSocket("localhost:8000");
+            WebSocket ws = new WebSocket("ws://localhost:8000");
+            
+
+            Console.ReadKey();
             int x = 0;
             int y = 0;
 
@@ -68,21 +72,27 @@ namespace DroneJoystickCtrl
                     if (Convert.ToString(state.Offset) == "X")
                     {
                         x = Convert.ToInt32((state.Value - 32511) / 325.11);
-                        if (x > 100) x = 100; 
-                    } else if (Convert.ToString(state.Offset) == "Y")
+                        if (x > 100) x = 100;
+                    }
+                    else if (Convert.ToString(state.Offset) == "Y")
                     {
                         y = Convert.ToInt32((state.Value - 32511) / 325.11);
                         if (y > 100) y = 100;
                     }
+                    Console.WriteLine(state);
+                    string package = "";
+                    ws.Send(package);
                     
                 }
-                Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
+                //Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
             }
+            
             
             
   
         }
-       
+        
+
     }
 }
 

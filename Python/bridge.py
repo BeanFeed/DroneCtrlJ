@@ -1,17 +1,18 @@
 import websockets
 import asyncio
 from djitellopy import Tello
-message
+message = ""
 
-drone = Tello()
-drone.connect()
+#drone = Tello()
+#drone.connect()
 
 async def handler(websocket, path):
     global message
     data = await websocket.recv()
     message = data
+    print(message)
     #reply = f"Data recieved as:  {data}!"
-    drone.send_control_command(message)
+    #drone.send_control_command(message)
     #await websocket.send(reply)
 
  
