@@ -17,10 +17,15 @@ namespace DroneJoystickCtrl
         {
             WebSocket ws = new WebSocket("ws://localhost:8000");
             ws.Connect();
-            Console.WriteLine(ws.IsAlive);
+            if (!ws.IsAlive)
+            {
+                Console.WriteLine("Websocket Server Isn't Responding");
+                Console.ReadKey();
+                Environment.Exit(1);
+            }
             ws.Send("test");
             Console.WriteLine("test1");
-            //Console.ReadKey();
+            
             int x = 0;
             int y = 0;
 
