@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,15 +24,17 @@ namespace DroneJoystickCtrl
                 Environment.Exit(1);
             }
             //ws.Send("test");
-            //Console.WriteLine("test1");
+            
             
             int x = 0;
             int y = 0;
+            int z = 0;
+            int w = 0;
 
             var directInput = new DirectInput();
 
             var joystickGuid = Guid.Empty;
-            //Console.WriteLine("test2");
+            
             foreach (var deviceInstance in directInput.GetDevices(DeviceType.Gamepad,
                 DeviceEnumerationFlags.AllDevices))
                 joystickGuid = deviceInstance.InstanceGuid;
@@ -42,7 +44,7 @@ namespace DroneJoystickCtrl
                 foreach (var deviceInstance in directInput.GetDevices(DeviceType.Joystick,
                         DeviceEnumerationFlags.AllDevices))
                     joystickGuid = deviceInstance.InstanceGuid;
-            Console.WriteLine("test3");
+           
             // If Joystick not found, throws an error
             if (joystickGuid == Guid.Empty)
             {
@@ -50,10 +52,10 @@ namespace DroneJoystickCtrl
                 Console.ReadKey();
                 Environment.Exit(1);
             }
-            //Console.WriteLine("test4");
+            
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
-            //Console.WriteLine("line 50");
+            
             Console.WriteLine("Found Joystick/Gamepad with GUID: {0}", joystickGuid);
 
             // Query all suported ForceFeedback effects
@@ -66,19 +68,19 @@ namespace DroneJoystickCtrl
 
             // Acquire the joystick
             joystick.Acquire();
-            //Console.WriteLine("test");
+            
             while (true)
             {
-                Console.WriteLine("test");
-                Console.WriteLine(ws.IsAlive);
-                ws.Send("test");
+                
+                //Console.WriteLine(ws.IsAlive);
+                //ws.Send("test");
                 joystick.Poll();
                 var datas = joystick.GetBufferedData();
                 
                 
                 foreach (var state in datas)
                 {
-                    
+
                     if (Convert.ToString(state.Offset) == "X")
                     {
                         x = Convert.ToInt32((state.Value - 32511) / 325.11);
@@ -89,13 +91,67 @@ namespace DroneJoystickCtrl
                         y = Convert.ToInt32((state.Value - 32511) / 325.11);
                         if (y > 100) y = 100;
                     }
-                    //Console.WriteLine(state);
-                    Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
-                    string package = "rc "+ Convert.ToString(x)+ " "+ Convert.ToString(y)+" 0 0";
+                    else if (Convert.ToString(state.Offset) == "RotationZ")
+                    {
+                        z = Convert.ToInt32((state.Value - 32511) / 325.11);
+                        if (z > 100) z = 100;
+                    }
+                    else if (Convert.ToString(state.Offset) == "Buttons4")
+                    {
+                        w = Convert.ToInt32(state.Value);
+                        if (w == 128)
+                        {
+                            w = 40;
+                        }
+                    }
+                    else if (Convert.ToString(state.Offset) == "Buttons2")
+                    {
+                        w = Convert.ToInt32(state.Value);
+                        if (w == 128)
+                        {
+                            w = -40;
+                        }
+                    }
+                    else if (Convert.ToString(state.Offset) == "Buttons5")
+                    {
+                        ws.Send("Takeoff");
+                    }
+                    else if (Convert.ToString(state.Offset) == "Buttons3")
+                    {
+                        ws.Send("Land");
+                    }
+                    else if (Convert.ToString(state.Offset) == "PointOfViewControllers0")
+                    {
+                        var val = Convert.ToInt32(state.Value);
+                        string dir = "n";
+                        if (val == 0)
+                        {
+                            dir = "f";
+                        }
+                        else if (val == 27000)
+                        {
+                            dir = "l";
+                        }
+                        else if (val == 18000)
+                        {
+                            dir = "b";
+                        }
+                        else if (val == 9000)
+                        {
+                            dir = "r";
+                        }
+                        if (dir != "n")
+                        {
+                            ws.Send("flip " + dir);
+                        }
+                    }
+                    Console.WriteLine(state);
+                    string package = "rc "+Convert.ToString(x)+" "+Convert.ToString(-y)+" "+ Convert.ToString(w)+ " "+ Convert.ToString(z);
+                    //Console.WriteLine(package);
                     ws.Send(package);
                     
                 }
-                
+                //Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
                 
             }
             
