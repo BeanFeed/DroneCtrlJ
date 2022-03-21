@@ -3,14 +3,19 @@ import asyncio
 import websockets
 
 from djitellopy import Tello
-
+message = " "
 #drone = Tello()
 #drone.connect()
 
+def runCMD(cmd):
+    pass
+    
 async def handler(websocket):
+    global message
     while True:
         message = await websocket.recv()
         print(message)
+        runCMD(message)
 
 
 async def main():
