@@ -23,8 +23,8 @@ namespace DroneJoystickCtrl
                 Console.ReadKey();
                 Environment.Exit(1);
             }
-            ws.Send("test");
-            Console.WriteLine("test1");
+            //ws.Send("test");
+            //Console.WriteLine("test1");
             
             int x = 0;
             int y = 0;
@@ -32,7 +32,7 @@ namespace DroneJoystickCtrl
             var directInput = new DirectInput();
 
             var joystickGuid = Guid.Empty;
-            Console.WriteLine("test2");
+            //Console.WriteLine("test2");
             foreach (var deviceInstance in directInput.GetDevices(DeviceType.Gamepad,
                 DeviceEnumerationFlags.AllDevices))
                 joystickGuid = deviceInstance.InstanceGuid;
@@ -50,10 +50,10 @@ namespace DroneJoystickCtrl
                 Console.ReadKey();
                 Environment.Exit(1);
             }
-            Console.WriteLine("test4");
+            //Console.WriteLine("test4");
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
-            Console.WriteLine("line 50");
+            //Console.WriteLine("line 50");
             Console.WriteLine("Found Joystick/Gamepad with GUID: {0}", joystickGuid);
 
             // Query all suported ForceFeedback effects
@@ -65,8 +65,8 @@ namespace DroneJoystickCtrl
             joystick.Properties.BufferSize = 128;
 
             // Acquire the joystick
-            //joystick.Acquire();
-            Console.WriteLine("test");
+            joystick.Acquire();
+            //Console.WriteLine("test");
             while (true)
             {
                 Console.WriteLine("test");
@@ -89,12 +89,13 @@ namespace DroneJoystickCtrl
                         y = Convert.ToInt32((state.Value - 32511) / 325.11);
                         if (y > 100) y = 100;
                     }
-                    Console.WriteLine(state);
-                    string package = "";
+                    //Console.WriteLine(state);
+                    Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
+                    string package = "rc "+ Convert.ToString(x)+ " "+ Convert.ToString(y)+" 0 0";
                     ws.Send(package);
                     
                 }
-                //Console.WriteLine("X: " + Convert.ToString(x) + "Y: "+ Convert.ToString(y));
+                
                 
             }
             
