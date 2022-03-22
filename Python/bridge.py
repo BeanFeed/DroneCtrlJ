@@ -142,15 +142,6 @@ def runCMD(cmd):
             else:
                 vidTrack = False
 
-async def handler(websocket):
-    global message
-    while True:
-        message = await websocket.recv()
-        print(message)
-        runCMD(message)
-        if (vidTrack == True):
-            videoTrack()
-
 def videoTrack():
     global x
     global y
@@ -208,6 +199,15 @@ def videoTrack():
         
     cv2.waitKey(1)
 
+async def handler(websocket):
+    global message
+    while True:
+        message = await websocket.recv()
+        print(message)
+        runCMD(message)
+        if (vidTrack == True):
+            videoTrack()
+    
 async def main():
     async with websockets.serve(handler, "", 8000):
         await asyncio.Future()  # run forever
