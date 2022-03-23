@@ -1,116 +1,14 @@
 import asyncio
 
-import numpy as np
-
-import math
-
-import cv2
-
 import websockets
 
 from djitellopy import Tello
 message = " "
-vidTrack = False
-using_drone = True
-x = 0
-y = 0
-w = 0
-h = 0
-
-vel = 20
-
-screenCenter = [320,240]
-boxW = 213
-boxH = 160
-
-box1 = [0,0]
-box2 = [213,0]
-box3 = [426,0]
-box4 = [0,160]
-box5 = [213,160]
-box6 = [426,160]
-box7 = [0,320]
-box8 = [213,320]
-box9 = [426,320]
-
-boxes = [box1,box2,box3,box4,box5,box6,box7,box8,box9]
-
-lower = np.array([157,33,108])
-upper = np.array([179,255,255])
-center = []
-
 drone = Tello()
 drone.connect()
 drone.takeoff()
 
-def testBox(box):
-    ox = center[0]
-    oy = center[1]
-    box = [box[0],box[1],box[0]+boxW,box[1]+boxH]
-
-    if ((ox in range(box[0],box[2])) and (oy in range(box[1],box[3]))):
-        return True
-
-def getBox():
-    i = 0
-    for box in boxes:
-        i = i + 1
-        if (testBox(box)):
-            return i
-
-
-def droneHandler(dist):
-    droneVel = [0,0,0,0]
-    if(dist[0] >= 180 and dist[1] >= 180):
-        droneVel[1] = -vel
-    elif(dist[0] <= 80 and dist[1] <= 80):
-        droneVel[1] = vel
-    gb = getBox()
-    #print(str(gb))
-    if(gb == 1):
-        droneVel[2] = vel
-        droneVel[3] = -vel
-    elif(gb == 2):
-        droneVel[2] = vel
-    elif(gb == 3):
-        droneVel[2] = vel
-        droneVel[3] = vel
-    elif(gb == 4):
-        droneVel[3] = -vel
-    elif(gb == 5):
-        pass
-    elif(gb == 6):
-        droneVel[3] = vel
-    elif(gb == 7):
-        droneVel[2] = -vel
-        droneVel[3] = -vel
-    elif(gb == 8):
-        droneVel[2] = -vel
-    elif(gb == 9):
-        droneVel[2] = -vel
-        droneVel[3] = vel
-    if(using_drone):
-        drone.send_rc_control(droneVel)
-    print(droneVel)
-
-def empty():
-    pass
-
-def dist(x1,y1,x2,y2):
-    add1 = pow(x1 - x2,2)
-    add2 = pow(y1 - y2,2)
-    add3 = add1 + add2
-    return math.sqrt(add3)
-if (using_drone):
-    cap = drone.get_frame_read().frame
-else:
-    cap = cv2.VideoCapture(0)
-    cap.set(3,640)
-    cap.set(4,480)
-
-
 def runCMD(cmd):
-    global vidTrack
     if(type(cmd) is str):
         if(cmd.startswith("rc")):
             cmd = cmd.split()
@@ -136,68 +34,6 @@ def runCMD(cmd):
                 drone.flip_back()
             elif(dir == "r"):
                 drone.flip_right()
-        elif(cmd == "toggleTrack"):
-            if(vidTrack == False):
-                vidTrack = True
-            else:
-                vidTrack = False
-
-def videoTrack():
-    global x
-    global y
-    global w
-    global h
-    global center
-
-
-    
-    _,img = cap.read()
-        
-    image = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-    
-    
-
-    h_min = cv2.getTrackbarPos("HUE Min","HSV")
-    h_max = cv2.getTrackbarPos("HUE Max","HSV")
-    s_min = cv2.getTrackbarPos("SAT Min","HSV")
-    s_max = cv2.getTrackbarPos("SAT Max","HSV")
-    v_min = cv2.getTrackbarPos("VAL Min","HSV")
-    v_max = cv2.getTrackbarPos("VAL Max","HSV")
-    
-        #lower = np.array([h_min,s_min,v_min])
-        #upper = np.array([h_max,s_max,v_max])
-
-    mask = cv2.inRange(image,lower,upper)
-
-    contours, hiearchy = cv2.findContours(mask, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
-    if len(contours) != 0:
-        for c in contours:
-            if cv2.contourArea(c) > 500:
-                x,y,w,h = cv2.boundingRect(c)
-                cv2.rectangle(img,(x,y),(x+w, y+h), (0,0,255),1)
-                newX = w / 2
-                newX = x + newX
-                newX = int(newX)
-                newY = w/2
-                newY = y + newY
-                newY = int(newY)
-                
-                center = [newX,newY]
-                cv2.circle(img, center,5, (0,0,255), -1)
-                cv2.circle(img, screenCenter,5,(0,0,255),-1)
-                cv2.line(img,center,screenCenter,(0,0,255),1)
-                droneHandler([dist(x,y,x+w,y),dist(x,y,x,y+h)])
-                    
-
-    cv2.line(img, [213 ,0],[213,480], (0,255,0),1)
-    cv2.line(img,[426,0],[426,480],(0,255,0),1)
-    cv2.line(img,[0,160],[640,160],(0,255,0),1)
-    cv2.line(img,[0,320],[640,320],(0,255,0),1)
-    cv2.imshow("mask",mask)
-    cv2.imshow("cam",img)
-        
-    cv2.waitKey(1)
 
 async def handler(websocket):
     global message
@@ -205,9 +41,8 @@ async def handler(websocket):
         message = await websocket.recv()
         print(message)
         runCMD(message)
-        if (vidTrack == True):
-            videoTrack()
-    
+
+
 async def main():
     async with websockets.serve(handler, "", 8000):
         await asyncio.Future()  # run forever
@@ -215,4 +50,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
